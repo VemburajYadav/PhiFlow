@@ -9,3 +9,5 @@ images/*
 data/*
 .cache
 run_tests.sh
+*.so
+*.o
