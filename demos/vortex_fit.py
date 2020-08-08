@@ -1,5 +1,6 @@
 from functools import partial
 from phi.tf.flow import *
+from phi.math.math_util import randn
 
 VORTEX_COUNT = 80
 DESCRIPTION = """
@@ -16,8 +17,9 @@ def gaussian_falloff(distance, sigma):
 
 
 # --- Prepare reference state ---
-fluid = world.add(Fluid(Domain([80, 64], boundaries=CLOSED), velocity=Noise()), physics=IncompressibleFlow())
-for _ in range(10): world.step()
+domain = Domain([80, 64], boundaries=CLOSED)
+fluid = world.add(Fluid(domain, velocity=randn(domain.staggered_grid(0).shape) * 0.2), physics=IncompressibleFlow())
+for _ in range(100): world.step()
 
 # --- Set up optimization ---
 opt_velocity = variable(AngularVelocity(location=math.random_uniform((1, VORTEX_COUNT, 2)) * fluid.domain.resolution,
