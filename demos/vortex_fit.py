@@ -15,8 +15,19 @@ def gaussian_falloff(distance, sigma):
     return math.exp(- sq_distance / sigma ** 2) / math.sqrt(sq_distance)
 
 
+# FLOW = Fluid(Domain([80, 64], boundaries=OPEN))
+# location = math.random_uniform((5, VORTEX_COUNT, 2)) * FLOW.domain.resolution
+# strength = (math.random_uniform((5, VORTEX_COUNT)) - 0.5) * 0.1
+# sigma = math.random_uniform((5, 1, 1, VORTEX_COUNT, 1)) + 5
+#
+# vorticity = AngularVelocity(location=location, strength=strength,
+#                             falloff=partial(gaussian_falloff, sigma=sigma))
+#
+# velocity = vorticity.at(FLOW.velocity)
+# fluid = world.add(Fluid(Domain([80, 64], boundaries=CLOSED), velocity=velocity, batch_size=5), physics=IncompressibleFlow())
+#
 # --- Prepare reference state ---
-fluid = world.add(Fluid(Domain([80, 64], boundaries=CLOSED), velocity=Noise()), physics=IncompressibleFlow())
+fluid = world.add(Fluid(Domain([80, 64], boundaries=CLOSED), velocity=StaggeredGrid(tf.ones((1, 81, 65, 2)))), physics=IncompressibleFlow())
 for _ in range(10): world.step()
 
 # --- Set up optimization ---
@@ -24,12 +35,12 @@ opt_velocity = variable(AngularVelocity(location=math.random_uniform((1, VORTEX_
                                         strength=(math.random_uniform((VORTEX_COUNT,)) - 0.5) * 0.1,
                                         falloff=partial(gaussian_falloff, sigma=variable(math.random_uniform((1, VORTEX_COUNT, 1)) + 5))))
 sampled_velocity = opt_velocity.at(fluid.velocity)
-loss = math.l2_loss(sampled_velocity - fluid.velocity)
-reg = math.l1_loss(opt_velocity.strength)
+# loss = math.l2_loss(sampled_velocity - fluid.velocity)
+# reg = math.l1_loss(opt_velocity.strength)
 
-app = LearningApp('Fit Fluid with Vortexes', DESCRIPTION, learning_rate=0.1)
-app.add_objective(loss, reg=reg)
-app.add_field('Fit Velocity', sampled_velocity)
-app.add_field('True Velocity', fluid.velocity)
-app.add_field('Vortex Strength', SampledField(opt_velocity.location, math.expand_dims(math.expand_dims(opt_velocity.strength, -1), 0)).at(fluid.density))
-show(app, display=('True Velocity', 'Fit Velocity'))
+# app = LearningApp('Fit Fluid with Vortexes', DESCRIPTION, learning_rate=0.1)
+# app.add_objective(loss, reg=reg)
+# app.add_field('Fit Velocity', sampled_velocity)
+# app.add_field('True Velocity', fluid.velocity)
+# app.add_field('Vortex Strength', SampledField(opt_velocity.location, math.expand_dims(math.expand_dims(opt_velocity.strength, -1), 0)).at(fluid.density))
+# show(app, display=('True Velocity', 'Fit Velocity'))
